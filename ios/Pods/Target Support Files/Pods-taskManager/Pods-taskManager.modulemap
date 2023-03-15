@@ -1,0 +1,6 @@
+module Pods_taskManager {
+  umbrella header "Pods-taskManager-umbrella.h"
+
+  export *
+  module * { export * }
+}

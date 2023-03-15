@@ -1,0 +1,6 @@
+module Pods_taskManager_taskManagerTests {
+  umbrella header "Pods-taskManager-taskManagerTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
