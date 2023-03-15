@@ -5,61 +5,61 @@ import {
   TouchableOpacity,
   Text,
   View,
-} from 'react-native';
-import React, {useState} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react-native";
+import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import {COLORS} from '../../shared/Styles';
+import { COLORS } from "../../shared/Styles";
 import {
   EMAIL_VALIDATION,
   USER_ADMIN_KEY,
   USER_LOGGEDIN_KEY,
   USER_MEMBER_KEY,
-} from '../../shared/Constants';
+} from "../../shared/Constants";
 
 const handleValidation = (val, type) => {
   switch (type) {
-    case 'EMAIL':
+    case "EMAIL":
       if (!val || !EMAIL_VALIDATION.test(val)) {
         return {
           val: val,
           isValid: false,
-          errMsg: 'Please enter valid email address',
+          errMsg: "Email is invalid",
         };
       } else {
         return {
           val: val,
           isValid: true,
-          errMsg: '',
+          errMsg: "",
         };
       }
-    case 'PASSWORD':
-      if (!val || val.length < 6) {
+    case "PASSWORD":
+      if (!val) {
         return {
           val: val,
           isValid: false,
-          errMsg: 'Password must be atleast 6 characters long.',
+          errMsg: "Please Enter Password.",
         };
       } else {
         return {
           val: val,
           isValid: true,
-          errMsg: '',
+          errMsg: "",
         };
       }
 
-    case 'NAME':
+    case "NAME":
       if (!val || val.length < 3) {
         return {
           val: val,
           isValid: false,
-          errMsg: 'Please enter valid name',
+          errMsg: "Please enter valid name",
         };
       } else {
         return {
           val: val,
           isValid: true,
-          errMsg: '',
+          errMsg: "",
         };
       }
 
@@ -68,31 +68,31 @@ const handleValidation = (val, type) => {
   }
 };
 
-export default function Signup({navigation}) {
+export default function Signup({ navigation }) {
   const [email, setEmail] = useState({
-    val: '',
+    val: "",
     isValid: true,
-    errMsg: '',
+    errMsg: "",
   });
 
   const [name, setName] = useState({
-    val: '',
+    val: "",
     isValid: true,
-    errMsg: '',
+    errMsg: "",
   });
   const [password, setPassword] = useState({
-    val: '',
+    val: "",
     isValid: true,
-    errMsg: '',
+    errMsg: "",
   });
 
   const [isAdmin, setIsAdmin] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    const emailValidation = handleValidation(email.val, 'EMAIL');
-    const passValidation = handleValidation(password.val, 'PASSWORD');
-    const nameValidation = handleValidation(name.val, 'NAME');
+    const emailValidation = handleValidation(email.val, "EMAIL");
+    const passValidation = handleValidation(password.val, "PASSWORD");
+    const nameValidation = handleValidation(name.val, "NAME");
 
     if (
       !emailValidation.isValid ||
@@ -113,14 +113,14 @@ export default function Signup({navigation}) {
 
     expectedData = JSON.parse(expectedData) || [];
 
-    const isUserAdded = expectedData.filter(e => e.email === email.val);
+    const isUserAdded = expectedData.filter((e) => e.email === email.val);
 
     if (isUserAdded.length > 0) {
-      setError('User already added');
+      setError("User already added");
       return;
     }
 
-    setError('');
+    setError("");
 
     if (isAdmin) {
       await AsyncStorage.setItem(
@@ -133,7 +133,7 @@ export default function Signup({navigation}) {
             isAdmin,
           },
           ...expectedData,
-        ]),
+        ])
       );
     } else {
       await AsyncStorage.setItem(
@@ -146,7 +146,7 @@ export default function Signup({navigation}) {
             isAdmin,
           },
           ...expectedData,
-        ]),
+        ])
       );
     }
 
@@ -157,15 +157,15 @@ export default function Signup({navigation}) {
         password: password.val,
         name: name.val,
         isAdmin,
-      }),
+      })
     );
 
     //Navigate from here
-    navigation.replace('HOME');
+    navigation.replace("HOME");
   };
 
   const toggleSwitch = () => {
-    setIsAdmin(prev => !prev);
+    setIsAdmin((prev) => !prev);
   };
 
   return (
@@ -180,10 +180,10 @@ export default function Signup({navigation}) {
             placeholder="Please Enter Your Name"
             textContentType="name"
             autoComplete="name"
-            onChangeText={val =>
+            onChangeText={(val) =>
               setName({
                 isValid: true,
-                errMsg: '',
+                errMsg: "",
                 val: val,
               })
             }
@@ -193,17 +193,17 @@ export default function Signup({navigation}) {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputText}>Email Address</Text>
+          <Text style={styles.inputText}>Email</Text>
           <TextInput
             value={email.val}
             textContentType="emailAddress"
             autoComplete="email"
             autoCapitalize="none"
-            placeholder="Please Enter Email address"
-            onChangeText={val =>
+            placeholder="Please Enter Your Email address"
+            onChangeText={(val) =>
               setEmail({
                 isValid: true,
-                errMsg: '',
+                errMsg: "",
                 val: val,
               })
             }
@@ -220,10 +220,10 @@ export default function Signup({navigation}) {
             textContentType="password"
             autoComplete="password"
             autoCapitalize="none"
-            onChangeText={val =>
+            onChangeText={(val) =>
               setPassword({
                 isValid: true,
-                errMsg: '',
+                errMsg: "",
                 val: val,
               })
             }
@@ -235,114 +235,119 @@ export default function Signup({navigation}) {
           )}
         </View>
 
+        <Text style={[styles.errText, { marginBottom: "3%" }]}>{error}</Text>
+
+        <TouchableOpacity style={styles.btn} onPress={handleSubmit}>
+          <Text>Sign up</Text>
+        </TouchableOpacity>
+
         <View style={styles.switchContainer}>
           <Text
             style={[
-              {color: isAdmin ? 'grey' : COLORS.primary},
+              { color: isAdmin ? COLORS.primary : "grey" },
               styles.inputText,
-            ]}>
-            Member
+            ]}
+          >
+            Admin
           </Text>
+
           <Switch
-            trackColor={{false: '#767577', true: COLORS.primary}}
-            thumbColor={isAdmin ? '#fff' : '#f4f3f4'}
+            trackColor={{ false: COLORS.primary, true: "#767577" }}
+            thumbColor={!isAdmin ? "#fff" : "#f4f3f4"}
             ios_backgroundColor="#3e3e3e"
             onValueChange={toggleSwitch}
             style={styles.switch}
-            value={isAdmin}
+            value={!isAdmin}
           />
 
           <Text
             style={[
-              {color: isAdmin ? COLORS.primary : 'grey'},
+              { color: isAdmin ? "grey" : COLORS.primary },
               styles.inputText,
-            ]}>
-            Admin
+            ]}
+          >
+            Member
           </Text>
         </View>
-
-        <Text style={[styles.errText, {marginBottom: '3%'}]}>{error}</Text>
-
-        <TouchableOpacity style={styles.btn} onPress={handleSubmit}>
-          <Text>Submit</Text>
-        </TouchableOpacity>
+        <Text
+          onPress={() => navigation.replace("LOGIN")}
+          style={styles.linkText}
+        >
+          Already have an account? click here
+        </Text>
       </View>
-
-      <Text onPress={() => navigation.replace('LOGIN')} style={styles.linkText}>
-        Already have an account? Login here
-      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    display: 'flex',
+    display: "flex",
     flex: 1,
-    alignItems: 'center',
-    paddingTop: '30%',
+    alignItems: "center",
+    paddingTop: "30%",
     backgroundColor: COLORS.primary,
     // justifyContent: 'center',
   },
   box: {
-    backgroundColor: '#fff',
-    paddingVertical: '5%',
-    width: '90%',
-    borderColor: 'grey',
+    backgroundColor: "#fff",
+    paddingVertical: "5%",
+    width: "90%",
+    borderColor: "grey",
     borderWidth: 1,
     borderRadius: 10,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: '10%',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: "10%",
   },
   btn: {
     backgroundColor: COLORS.primary,
-    paddingHorizontal: '5%',
-    paddingVertical: '3%',
+    paddingHorizontal: "5%",
+    paddingVertical: "3%",
     borderRadius: 50,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
   headerText: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   inputContainer: {
-    marginTop: '5%',
-    marginBottom: '2%',
-    width: '100%',
-    paddingHorizontal: '5%',
+    marginTop: "5%",
+    marginBottom: "2%",
+    width: "100%",
+    paddingHorizontal: "5%",
   },
   input: {
-    backgroundColor: '#fff',
-    borderColor: 'grey',
-    borderWidth: 1,
-    padding: '2%',
+    backgroundColor: "#fff",
+    borderColor: "grey",
+    borderBottomWidth: 1,
+    padding: "2%",
   },
   inputText: {
     fontSize: 14,
-    fontWeight: '400',
-    marginBottom: '2%',
+    fontWeight: "400",
+    marginBottom: "2%",
   },
   errText: {
     fontSize: 12,
-    fontWeight: '400',
-    color: 'red',
+    fontWeight: "400",
+    color: "red",
   },
   linkText: {
     fontSize: 12,
-    fontWeight: '400',
+    fontWeight: "400",
     color: COLORS.link,
-    marginTop: '5%',
+    marginTop: "5%",
   },
   switchContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    flexDirection: 'row',
+    display: "flex",
+    alignItems: "center",
+    flexDirection: "row",
   },
   switch: {
-    marginHorizontal: '3%',
-    marginVertical: '3%',
+    marginHorizontal: "3%",
+    marginVertical: "3%",
   },
 });
