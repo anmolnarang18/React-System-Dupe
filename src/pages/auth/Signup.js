@@ -1,75 +1,32 @@
 import {
   StyleSheet,
-  Switch,
   TextInput,
   TouchableOpacity,
   Text,
   View,
 } from "react-native";
 import React, { useState } from "react";
+import SelectDropdown from "react-native-select-dropdown";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 import { COLORS } from "../../shared/Styles";
 import {
-  EMAIL_VALIDATION,
   USER_ADMIN_KEY,
   USER_LOGGEDIN_KEY,
   USER_MEMBER_KEY,
+  USER_TYPES,
 } from "../../shared/Constants";
-
-const handleValidation = (val, type) => {
-  switch (type) {
-    case "EMAIL":
-      if (!val || !EMAIL_VALIDATION.test(val)) {
-        return {
-          val: val,
-          isValid: false,
-          errMsg: "Email is invalid",
-        };
-      } else {
-        return {
-          val: val,
-          isValid: true,
-          errMsg: "",
-        };
-      }
-    case "PASSWORD":
-      if (!val) {
-        return {
-          val: val,
-          isValid: false,
-          errMsg: "Please Enter Password.",
-        };
-      } else {
-        return {
-          val: val,
-          isValid: true,
-          errMsg: "",
-        };
-      }
-
-    case "NAME":
-      if (!val || val.length < 3) {
-        return {
-          val: val,
-          isValid: false,
-          errMsg: "Please enter valid name",
-        };
-      } else {
-        return {
-          val: val,
-          isValid: true,
-          errMsg: "",
-        };
-      }
-
-    default:
-      break;
-  }
-};
+import { handleValidation } from "../../utils/Validations";
 
 export default function Signup({ navigation }) {
   const [email, setEmail] = useState({
+    val: "",
+    isValid: true,
+    errMsg: "",
+  });
+
+  const [pass, setPass] = useState({
     val: "",
     isValid: true,
     errMsg: "",
@@ -80,32 +37,23 @@ export default function Signup({ navigation }) {
     isValid: true,
     errMsg: "",
   });
-  const [password, setPassword] = useState({
-    val: "",
-    isValid: true,
-    errMsg: "",
-  });
 
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userType, setUserType] = useState(USER_TYPES.MEMBER);
   const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    const emailValidation = handleValidation(email.val, "EMAIL");
-    const passValidation = handleValidation(password.val, "PASSWORD");
-    const nameValidation = handleValidation(name.val, "NAME");
+  const handleSignUp = async () => {
+    const emailValid = handleValidation(email.val, "EMAIL");
+    const passValid = handleValidation(pass.val, "PASSWORD");
+    const nameValid = handleValidation(name.val, "STRING", "name");
 
-    if (
-      !emailValidation.isValid ||
-      !passValidation.isValid ||
-      !nameValidation
-    ) {
-      setEmail(emailValidation);
-      setPassword(passValidation);
-      setName(nameValidation);
+    if (!emailValid.isValid || !passValid.isValid || !nameValid) {
+      setEmail(emailValid);
+      setPass(passValid);
+      setName(nameValid);
       return;
     }
     let expectedData = [];
-    if (isAdmin) {
+    if (userType === USER_TYPES.ADMIN) {
       expectedData = await AsyncStorage.getItem(USER_ADMIN_KEY);
     } else {
       expectedData = await AsyncStorage.getItem(USER_MEMBER_KEY);
@@ -122,15 +70,15 @@ export default function Signup({ navigation }) {
 
     setError("");
 
-    if (isAdmin) {
+    if (userType === USER_TYPES.ADMIN) {
       await AsyncStorage.setItem(
         USER_ADMIN_KEY,
         JSON.stringify([
           {
             email: email.val,
-            password: password.val,
+            password: pass.val,
             name: name.val,
-            isAdmin,
+            isAdmin: true,
           },
           ...expectedData,
         ])
@@ -141,9 +89,9 @@ export default function Signup({ navigation }) {
         JSON.stringify([
           {
             email: email.val,
-            password: password.val,
+            password: pass.val,
             name: name.val,
-            isAdmin,
+            isAdmin: false,
           },
           ...expectedData,
         ])
@@ -154,18 +102,14 @@ export default function Signup({ navigation }) {
       USER_LOGGEDIN_KEY,
       JSON.stringify({
         email: email.val,
-        password: password.val,
+        password: pass.val,
         name: name.val,
-        isAdmin,
+        isAdmin: userType === USER_TYPES.ADMIN,
       })
     );
 
     //Navigate from here
-    navigation.replace("HOME");
-  };
-
-  const toggleSwitch = () => {
-    setIsAdmin((prev) => !prev);
+    navigation.replace("task_home");
   };
 
   return (
@@ -199,7 +143,7 @@ export default function Signup({ navigation }) {
             textContentType="emailAddress"
             autoComplete="email"
             autoCapitalize="none"
-            placeholder="Please Enter Your Email address"
+            placeholder="Please enter your Email address"
             onChangeText={(val) =>
               setEmail({
                 isValid: true,
@@ -215,13 +159,13 @@ export default function Signup({ navigation }) {
         <View style={styles.inputContainer}>
           <Text style={styles.inputText}>Password</Text>
           <TextInput
-            value={password.val}
-            placeholder="Please Enter Password"
+            value={pass.val}
+            placeholder="Please Enter your Password"
             textContentType="password"
             autoComplete="password"
             autoCapitalize="none"
             onChangeText={(val) =>
-              setPassword({
+              setPass({
                 isValid: true,
                 errMsg: "",
                 val: val,
@@ -230,47 +174,58 @@ export default function Signup({ navigation }) {
             style={styles.input}
             secureTextEntry
           />
-          {!password.isValid && (
-            <Text style={styles.errText}>{password.errMsg}</Text>
-          )}
+          {!pass.isValid && <Text style={styles.errText}>{pass.errMsg}</Text>}
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputText}>Select User Type</Text>
+          <SelectDropdown
+            data={[USER_TYPES.MEMBER, USER_TYPES.ADMIN]}
+            onSelect={(selectedItem, index) => {
+              setUserType(selectedItem);
+            }}
+            defaultValue={userType}
+            defaultButtonText="Select task (if any)"
+            buttonStyle={styles.dropdown1BtnStyle}
+            buttonTextStyle={styles.dropdown1BtnTxtStyle}
+            renderDropdownIcon={(isOpened) => {
+              return (
+                <FontAwesome
+                  name={isOpened ? "chevron-up" : "chevron-down"}
+                  color={"#444"}
+                  size={18}
+                />
+              );
+            }}
+            dropdownIconPosition={"right"}
+            dropdownStyle={styles.dropdown1DropdownStyle}
+            rowStyle={styles.dropdown1RowStyle}
+            rowTextStyle={styles.dropdown1BtnTxtStyle}
+            buttonTextAfterSelection={(selectedItem, index) => {
+              // text represented after item is selected
+              // if data array is an array of objects then return selectedItem.property to render after item is selected
+              return selectedItem;
+            }}
+            rowTextForSelection={(item, index) => {
+              // text represented for each item in dropdown
+              // if data array is an array of objects then return item.property to represent item in dropdown
+              return item;
+            }}
+          />
         </View>
 
         <Text style={[styles.errText, { marginBottom: "3%" }]}>{error}</Text>
 
-        <TouchableOpacity style={styles.btn} onPress={handleSubmit}>
-          <Text>Sign up</Text>
+        <TouchableOpacity style={styles.btn} onPress={handleSignUp}>
+          <Text
+            style={{ color: COLORS.secondary, fontSize: 14, fontWeight: "700" }}
+          >
+            Sign up
+          </Text>
         </TouchableOpacity>
 
-        <View style={styles.switchContainer}>
-          <Text
-            style={[
-              { color: isAdmin ? COLORS.primary : "grey" },
-              styles.inputText,
-            ]}
-          >
-            Admin
-          </Text>
-
-          <Switch
-            trackColor={{ false: COLORS.primary, true: "#767577" }}
-            thumbColor={!isAdmin ? "#fff" : "#f4f3f4"}
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={toggleSwitch}
-            style={styles.switch}
-            value={!isAdmin}
-          />
-
-          <Text
-            style={[
-              { color: isAdmin ? "grey" : COLORS.primary },
-              styles.inputText,
-            ]}
-          >
-            Member
-          </Text>
-        </View>
         <Text
-          onPress={() => navigation.replace("LOGIN")}
+          onPress={() => navigation.replace("app_signin")}
           style={styles.linkText}
         >
           Already have an account? click here
@@ -285,7 +240,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flex: 1,
     alignItems: "center",
-    paddingTop: "30%",
+    paddingTop: "10%",
     backgroundColor: COLORS.primary,
     // justifyContent: 'center',
   },
@@ -305,13 +260,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     paddingHorizontal: "5%",
     paddingVertical: "3%",
-    borderRadius: 50,
+    borderRadius: 8,
     width: "80%",
     alignItems: "center",
   },
   headerText: {
     fontSize: 24,
     fontWeight: "700",
+    color: COLORS.secondary,
   },
   inputContainer: {
     marginTop: "5%",
@@ -321,8 +277,9 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#fff",
-    borderColor: "grey",
-    borderBottomWidth: 1,
+    borderColor: "#444",
+    borderBottomWidth: 0.5,
+    borderRadius: 8,
     padding: "2%",
   },
   inputText: {
@@ -334,6 +291,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "400",
     color: "red",
+    marginTop: "1%",
   },
   linkText: {
     fontSize: 12,
@@ -341,13 +299,20 @@ const styles = StyleSheet.create({
     color: COLORS.link,
     marginTop: "5%",
   },
-  switchContainer: {
-    display: "flex",
-    alignItems: "center",
-    flexDirection: "row",
+  dropdown1BtnStyle: {
+    width: "100%",
+    height: 40,
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    borderWidth: 0,
+    borderBottomWidth: 0.5,
+    borderColor: "#444",
+    alignSelf: "center",
   },
-  switch: {
-    marginHorizontal: "3%",
-    marginVertical: "3%",
+  dropdown1BtnTxtStyle: { color: "#444", textAlign: "left", fontSize: 14 },
+  dropdown1DropdownStyle: { backgroundColor: "#EFEFEF" },
+  dropdown1RowStyle: {
+    backgroundColor: "#EFEFEF",
+    borderBottomColor: "#C5C5C5",
   },
 });

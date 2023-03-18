@@ -1,7 +1,7 @@
 export const COLORS = {
-  primary: "red",
-  secondary: "yellow",
+  primary: "#3bb871",
+  secondary: "#73224f",
   tertairy: "orangered",
   lightBG: "lightBlue",
-  link: "blue",
+  link: "#0000EE",
 };

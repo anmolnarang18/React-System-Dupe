@@ -1,63 +1,24 @@
 import {
   ActivityIndicator,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-
+import SelectDropdown from "react-native-select-dropdown";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 import {
-  EMAIL_VALIDATION,
   USER_ADMIN_KEY,
   USER_LOGGEDIN_KEY,
   USER_MEMBER_KEY,
+  USER_TYPES,
 } from "../../shared/Constants";
 import { COLORS } from "../../shared/Styles";
-
-const handleValidation = (val, type) => {
-  switch (type) {
-    case "EMAIL":
-      if (!val || !EMAIL_VALIDATION.test(val)) {
-        return {
-          val: val,
-          isValid: false,
-          errMsg: "email address is invalid",
-        };
-      } else {
-        return {
-          val: val,
-          isValid: true,
-          errMsg: "",
-        };
-      }
-    case "PASSWORD":
-      if (!val) {
-        return {
-          val: val,
-          isValid: false,
-          errMsg: "Please Enter Password.",
-        };
-      } else {
-        return {
-          val: val,
-          isValid: true,
-          errMsg: "",
-        };
-      }
-
-    default:
-      return {
-        val: val,
-        isValid: true,
-        errMsg: "",
-      };
-  }
-};
+import { handleValidation } from "../../utils/Validations";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState({
@@ -65,15 +26,15 @@ export default function Login({ navigation }) {
     isValid: true,
     errMsg: "",
   });
-  const [password, setPassword] = useState({
+  const [pass, setPass] = useState({
     val: "",
     isValid: true,
     errMsg: "",
   });
 
-  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [userType, setUserType] = useState(USER_TYPES.MEMBER);
 
   useEffect(() => {
     isUserLoggedIn();
@@ -83,23 +44,25 @@ export default function Login({ navigation }) {
     let info = await AsyncStorage.getItem(USER_LOGGEDIN_KEY);
     info = info ? JSON.parse(info) : null;
 
-    if (info?.email) {
-      navigation.replace("HOME");
-    }
     setIsLoading(false);
+
+    if (info?.email) {
+      navigation.replace("task_home");
+    }
   };
 
-  const handleSubmit = async () => {
+  const handleSignIn = async () => {
     const emailValidation = handleValidation(email.val, "EMAIL");
-    const passValidation = handleValidation(password.val, "PASSWORD");
+    const passValidation = handleValidation(pass.val, "PASSWORD");
 
     if (!emailValidation.isValid || !passValidation.isValid) {
       setEmail(emailValidation);
-      setPassword(passValidation);
+      setPass(passValidation);
       return;
     }
+
     let expectedData = [];
-    if (isAdmin) {
+    if (userType === USER_TYPES.ADMIN) {
       expectedData = await AsyncStorage.getItem(USER_ADMIN_KEY);
     } else {
       expectedData = await AsyncStorage.getItem(USER_MEMBER_KEY);
@@ -110,7 +73,7 @@ export default function Login({ navigation }) {
     const isUserAdded = expectedData.filter((e) => e.email === email.val);
 
     if (isUserAdded.length === 0) {
-      setError("User not found");
+      setError("Invalid email or password");
       return;
     }
 
@@ -120,11 +83,7 @@ export default function Login({ navigation }) {
       JSON.stringify(isUserAdded[0])
     );
     //Navigate from here
-    navigation.replace("HOME");
-  };
-
-  const toggleSwitch = () => {
-    setIsAdmin((prev) => !prev);
+    navigation.replace("task_home");
   };
 
   if (isLoading) {
@@ -142,10 +101,10 @@ export default function Login({ navigation }) {
 
       <View style={styles.box}>
         <View style={styles.inputContainer}>
-          <Text style={styles.inputText}>Email </Text>
+          <Text style={styles.inputText}>Email Address</Text>
           <TextInput
             value={email.val}
-            placeholder="Please Enter Your Email address"
+            placeholder="Please enter your Email address"
             textContentType="emailAddress"
             autoCapitalize="none"
             autoComplete="email"
@@ -164,13 +123,13 @@ export default function Login({ navigation }) {
         <View style={styles.inputContainer}>
           <Text style={styles.inputText}>Password</Text>
           <TextInput
-            value={password.val}
-            placeholder="Please Enter Password"
+            value={pass.val}
+            placeholder="Please enter your Password"
             textContentType="password"
             autoComplete="password"
             autoCapitalize="none"
             onChangeText={(val) =>
-              setPassword({
+              setPass({
                 isValid: true,
                 errMsg: "",
                 val: val,
@@ -179,50 +138,61 @@ export default function Login({ navigation }) {
             secureTextEntry
             style={styles.input}
           />
-          {!password.isValid && (
-            <Text style={styles.errText}>{password.errMsg}</Text>
-          )}
+          {!pass.isValid && <Text style={styles.errText}>{pass.errMsg}</Text>}
         </View>
 
-        <TouchableOpacity style={styles.btn} onPress={handleSubmit}>
-          <Text>Login</Text>
-        </TouchableOpacity>
-
-        <View style={styles.switchContainer}>
-          <Text
-            style={[
-              { color: isAdmin ? COLORS.primary : "grey" },
-              styles.inputText,
-            ]}
-          >
-            Admin
-          </Text>
-          <Switch
-            trackColor={{ false: COLORS.primary, true: "#767577" }}
-            thumbColor={!isAdmin ? "#fff" : "#f4f3f4"}
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={toggleSwitch}
-            style={styles.switch}
-            value={!isAdmin}
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputText}>Select User Type</Text>
+          <SelectDropdown
+            data={[USER_TYPES.MEMBER, USER_TYPES.ADMIN]}
+            onSelect={(selectedItem, index) => {
+              setUserType(selectedItem);
+            }}
+            defaultValue={userType}
+            defaultButtonText="Select task (if any)"
+            buttonStyle={styles.dropdown1BtnStyle}
+            buttonTextStyle={styles.dropdown1BtnTxtStyle}
+            renderDropdownIcon={(isOpened) => {
+              return (
+                <FontAwesome
+                  name={isOpened ? "chevron-up" : "chevron-down"}
+                  color={"#444"}
+                  size={18}
+                />
+              );
+            }}
+            dropdownIconPosition={"right"}
+            dropdownStyle={styles.dropdown1DropdownStyle}
+            rowStyle={styles.dropdown1RowStyle}
+            rowTextStyle={styles.dropdown1BtnTxtStyle}
+            buttonTextAfterSelection={(selectedItem, index) => {
+              // text represented after item is selected
+              // if data array is an array of objects then return selectedItem.property to render after item is selected
+              return selectedItem;
+            }}
+            rowTextForSelection={(item, index) => {
+              // text represented for each item in dropdown
+              // if data array is an array of objects then return item.property to represent item in dropdown
+              return item;
+            }}
           />
-
-          <Text
-            style={[
-              { color: isAdmin ? "grey" : COLORS.primary },
-              styles.inputText,
-            ]}
-          >
-            Member
-          </Text>
         </View>
 
         <Text style={[styles.errText, { marginBottom: "3%" }]}>{error}</Text>
 
+        <TouchableOpacity style={styles.btn} onPress={handleSignIn}>
+          <Text
+            style={{ color: COLORS.secondary, fontSize: 14, fontWeight: "700" }}
+          >
+            Login
+          </Text>
+        </TouchableOpacity>
+
         <Text
-          onPress={() => navigation.replace("SIGNUP")}
+          onPress={() => navigation.replace("app_signup")}
           style={styles.linkText}
         >
-          New to the management? click here
+          New here? Signup
         </Text>
       </View>
     </View>
@@ -234,11 +204,11 @@ const styles = StyleSheet.create({
     display: "flex",
     flex: 1,
     alignItems: "center",
-    paddingTop: "30%",
-    // justifyContent: 'center',
+    paddingTop: "20%",
     backgroundColor: COLORS.primary,
   },
   box: {
+    backgroundColor: "#fff",
     paddingVertical: "5%",
     width: "90%",
     borderColor: "grey",
@@ -248,20 +218,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: "10%",
-    backgroundColor: "#fff",
   },
   btn: {
     backgroundColor: COLORS.primary,
     paddingHorizontal: "5%",
     paddingVertical: "3%",
-    borderRadius: 50,
+    borderRadius: 8,
     width: "80%",
     alignItems: "center",
-    marginTop: "5%",
   },
   headerText: {
     fontSize: 24,
     fontWeight: "700",
+    color: COLORS.secondary,
   },
   inputContainer: {
     marginTop: "5%",
@@ -271,8 +240,9 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#fff",
-    borderColor: "grey",
-    borderBottomWidth: 1,
+    borderColor: "#444",
+    borderRadius: 8,
+    borderBottomWidth: 0.5,
     padding: "2%",
   },
   inputText: {
@@ -284,20 +254,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "400",
     color: "red",
+    marginTop: "1%",
   },
   linkText: {
     fontSize: 12,
     fontWeight: "400",
     color: COLORS.link,
+    marginTop: "5%",
   },
-  switchContainer: {
-    display: "flex",
-    alignItems: "center",
-    flexDirection: "row",
-    backgroundColor: "#fff",
+
+  dropdown1BtnStyle: {
+    width: "100%",
+    height: 40,
+    backgroundColor: "#FFF",
+    borderRadius: 8,
+    borderWidth: 0,
+    borderBottomWidth: 0.5,
+    borderColor: "#444",
+    alignSelf: "center",
   },
-  switch: {
-    marginHorizontal: "3%",
-    marginVertical: "3%",
+  dropdown1BtnTxtStyle: { color: "#444", textAlign: "left", fontSize: 14 },
+  dropdown1DropdownStyle: { backgroundColor: "#EFEFEF" },
+  dropdown1RowStyle: {
+    backgroundColor: "#EFEFEF",
+    borderBottomColor: "#C5C5C5",
   },
 });
