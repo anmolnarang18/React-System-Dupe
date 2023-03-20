@@ -1,3 +1,5 @@
+import React, { useState } from "react";
+
 import {
   Alert,
   StyleSheet,
@@ -6,18 +8,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
-import Icon from "react-native-vector-icons/AntDesign";
+
 import moment from "moment";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { COLORS } from "../../shared/Styles";
 import { TASKS_KEY, TASK_STATUS } from "../../shared/Constants";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import CustomHeader from "../../components/CustomHeader";
+
 import {
   showTaskStatus,
   decideTaskStatusChange,
   decideTaskClr,
 } from "../../utils/UtilityFuncs";
-import CustomHeader from "../../components/CustomHeader";
 
 export default function TaskDetails({ navigation, route }) {
   const { taskInfo, userInfo, getTasks } = route.params;
@@ -38,10 +42,7 @@ export default function TaskDetails({ navigation, route }) {
 
       if (depTask.length > 0) {
         if (depTask[0].status !== TASK_STATUS.COMPLETED) {
-          Alert.alert(
-            "Warning",
-            `${depTask[0].name}(${depTask[0].id}) task is not completed yet.`
-          );
+          Alert.alert("Error", `Complete ${depTask[0].name} to continue.`);
           return;
         }
       }
@@ -92,8 +93,7 @@ export default function TaskDetails({ navigation, route }) {
         </Text>
 
         <Text style={styles.text}>
-          <Text style={styles.boldText}>Wage per hour: </Text>$
-          {taskInfo.perHourCost}
+          <Text style={styles.boldText}>Wages: </Text>${taskInfo.perHourCost}
         </Text>
 
         <Text style={[styles.text, { color: decideTaskClr(taskInfo.status) }]}>
@@ -114,10 +114,10 @@ export default function TaskDetails({ navigation, route }) {
           </>
         ) : (
           <>
-            <Text style={styles.text}>
+            {/* <Text style={styles.text}>
               <Text style={styles.boldText}>Manager: </Text>
               {`${taskInfo.createdBy.name} #${taskInfo.createdBy.email}`}
-            </Text>
+            </Text> */}
 
             <View style={styles.row}>
               <Text style={styles.boldText}>Total Hours: </Text>
@@ -127,7 +127,7 @@ export default function TaskDetails({ navigation, route }) {
                 style={[
                   styles.input,
                   {
-                    borderWidth:
+                    borderBottomWidth:
                       taskInfo.status === TASK_STATUS.IN_PROGRESS ? 1 : 0,
                     paddingHorizontal:
                       taskInfo.status === TASK_STATUS.IN_PROGRESS ? "5%" : 0,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flex: 1,
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    backgroundColor: "#fff",
     padding: "5%",
   },
   box: {
@@ -176,7 +176,6 @@ const styles = StyleSheet.create({
     paddingVertical: "5%",
     width: "100%",
     borderColor: "grey",
-    borderWidth: 1,
     borderRadius: 10,
     display: "flex",
     padding: "5%",

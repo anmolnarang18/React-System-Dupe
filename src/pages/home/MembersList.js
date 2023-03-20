@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -5,11 +6,12 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import Icon from "react-native-vector-icons/AntDesign";
-import React, { useEffect, useState } from "react";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { USER_MEMBER_KEY } from "../../shared/Constants";
+
+import { MEMBER_KEY } from "../../shared/Constants";
 import { COLORS } from "../../shared/Styles";
+
 import CustomHeader from "../../components/CustomHeader";
 
 export default function MembersList({ navigation, route }) {
@@ -20,7 +22,7 @@ export default function MembersList({ navigation, route }) {
   }, []);
 
   const fetchMembers = async () => {
-    let list = await AsyncStorage.getItem(USER_MEMBER_KEY);
+    let list = await AsyncStorage.getItem(MEMBER_KEY);
     list = JSON.parse(list) || [];
     const { memberDetail } = route.params;
 
@@ -65,7 +67,7 @@ export default function MembersList({ navigation, route }) {
             styles.memberItemContainer,
             styles.rowStyling,
             { borderColor: item.isSelected ? COLORS.secondary : "#000" },
-            { borderWidth: item.isSelected ? 2 : 1 },
+            { borderBottomWidth: item.isSelected ? 2 : 1 },
           ]}
         >
           <Text
@@ -82,7 +84,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flex: 1,
     padding: "5%",
-    backgroundColor: COLORS.primary,
+    backgroundColor: "#fff",
   },
   input: {
     width: "30%",
@@ -98,8 +100,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   memberItemContainer: {
-    borderWidth: 1,
-    borderRadius: 10,
+    borderBottomWidth: 1,
+    borderRadius: 8,
     padding: "5%",
     marginVertical: "3%",
     backgroundColor: "#fff",

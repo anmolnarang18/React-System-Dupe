@@ -1,6 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import moment from "moment";
 import React, { useEffect, useState } from "react";
+
 import {
   Alert,
   FlatList,
@@ -9,19 +8,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
+
 import CustomFloatingBtn from "../../components/CustomFloatingBtn";
-import {
-  TASKS_KEY,
-  TASK_STATUS,
-  USER_LOGGEDIN_KEY,
-} from "../../shared/Constants";
+import CustomHeader from "../../components/CustomHeader";
+
+import { TASKS_KEY, TASK_STATUS, LOGGEDIN_KEY } from "../../shared/Constants";
 import { COLORS } from "../../shared/Styles";
 import {
   showTaskStatus,
   decideTaskStatusChange,
   decideTaskClr,
 } from "../../utils/UtilityFuncs";
-import CustomHeader from "../../components/CustomHeader";
 
 export default function Home({ navigation }) {
   const [userInfo, setUserInfo] = useState({});
@@ -33,14 +33,14 @@ export default function Home({ navigation }) {
   }, []);
 
   const getUserInfo = async () => {
-    let info = await AsyncStorage.getItem(USER_LOGGEDIN_KEY);
+    let info = await AsyncStorage.getItem(LOGGEDIN_KEY);
     info = JSON.parse(info);
     setUserInfo(info);
     getTasks(info);
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem(USER_LOGGEDIN_KEY);
+    await AsyncStorage.removeItem(LOGGEDIN_KEY);
     navigation.reset({
       index: 0,
       routes: [{ name: "auth" }],
@@ -105,10 +105,7 @@ export default function Home({ navigation }) {
 
       if (depTask.length > 0) {
         if (depTask[0].status !== TASK_STATUS.COMPLETED) {
-          Alert.alert(
-            "Warning",
-            `${depTask[0].name}(${depTask[0].id}) task is not completed yet`
-          );
+          Alert.alert("Error", `Complete ${depTask[0].name} to continue.`);
           return;
         }
       }
@@ -150,7 +147,7 @@ export default function Home({ navigation }) {
         ListHeaderComponent={() => (
           <View style={styles.headerContainer}>
             <CustomHeader
-              heading={"Welcome," + " " + userInfo?.name}
+              heading="Task List"
               containerStyles={{ width: "70%" }}
             />
             <Text onPress={handleLogout} style={styles.logoutText}>
@@ -269,7 +266,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flex: 1,
     // alignItems: 'center',
-    backgroundColor: COLORS.primary,
+    backgroundColor: "#fff",
     padding: "3%",
     width: "100%",
   },
@@ -278,7 +275,7 @@ const styles = StyleSheet.create({
     padding: "3%",
     width: "100%",
     borderColor: COLORS.secondary,
-    borderWidth: 1,
+    borderBottomWidth: 1,
     borderRadius: 8,
     display: "flex",
     marginVertical: "3%",

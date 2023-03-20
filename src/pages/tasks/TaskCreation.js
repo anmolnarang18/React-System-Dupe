@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import {
   StyleSheet,
   Text,
@@ -6,17 +7,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import DatePicker from "react-native-date-picker";
 import SelectDropdown from "react-native-select-dropdown";
-
-import Icon from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-
 import moment from "moment";
+
 import { COLORS } from "../../shared/Styles";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { handleValidation } from "../../utils/Validations";
 import { TASKS_KEY, TASK_STATUS } from "../../shared/Constants";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomHeader from "../../components/CustomHeader";
 
 export default function TaskCreation({ navigation, route }) {
@@ -183,7 +184,7 @@ export default function TaskCreation({ navigation, route }) {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputText}>Wages per hour</Text>
+          <Text style={styles.inputText}>Wages</Text>
           <TextInput
             value={wage.val}
             keyboardType="numeric"
@@ -201,50 +202,13 @@ export default function TaskCreation({ navigation, route }) {
           {!wage.isValid && <Text style={styles.errText}>{wage.errMsg}</Text>}
         </View>
 
-        <View style={{ marginVertical: "2%", paddingHorizontal: "5%" }}>
-          <Text>Select Dependendency (if any)</Text>
-          <SelectDropdown
-            data={taskList}
-            onSelect={(selectedItem, index) => {
-              setSelectedTask(selectedItem);
-            }}
-            defaultValue={selectedTask}
-            defaultButtonText="Select task"
-            buttonStyle={styles.dropdown1BtnStyle}
-            buttonTextStyle={styles.dropdown1BtnTxtStyle}
-            renderDropdownIcon={(isOpened) => {
-              return (
-                <FontAwesome
-                  name={isOpened ? "chevron-up" : "chevron-down"}
-                  color={"#444"}
-                  size={18}
-                />
-              );
-            }}
-            dropdownIconPosition={"right"}
-            dropdownStyle={styles.dropdown1DropdownStyle}
-            rowStyle={styles.dropdown1RowStyle}
-            rowTextStyle={styles.dropdown1BtnTxtStyle}
-            buttonTextAfterSelection={(selectedItem, index) => {
-              // text represented after item is selected
-              // if data array is an array of objects then return selectedItem.property to render after item is selected
-              return `${selectedItem.name}(${selectedItem.id})`;
-            }}
-            rowTextForSelection={(item, index) => {
-              // text represented for each item in dropdown
-              // if data array is an array of objects then return item.property to represent item in dropdown
-              return `${item.name}(${item.id})`;
-            }}
-          />
-        </View>
-
         <View style={styles.dateContainer}>
           <View>
             <Text
               onPress={() => setOpenCDate((prev) => !prev)}
               style={styles.inputText}
             >
-              Created date
+              Start date
             </Text>
             <DatePicker
               modal
@@ -273,7 +237,7 @@ export default function TaskCreation({ navigation, route }) {
               onPress={() => setOpenEDate((prev) => !prev)}
               style={styles.inputText}
             >
-              Last date
+              End date
             </Text>
             <DatePicker
               modal
@@ -293,6 +257,49 @@ export default function TaskCreation({ navigation, route }) {
               {moment(endDate).format("DD/M/YYYY")}
             </Text>
           </View>
+        </View>
+
+        <View
+          style={{
+            marginVertical: "2%",
+            marginTop: "5%",
+            paddingHorizontal: "5%",
+          }}
+        >
+          <Text>Any Dependendent Task?</Text>
+          <SelectDropdown
+            data={taskList}
+            onSelect={(selectedItem, index) => {
+              setSelectedTask(selectedItem);
+            }}
+            defaultValue={selectedTask}
+            defaultButtonText="Select task"
+            buttonStyle={styles.dropdown1BtnStyle}
+            buttonTextStyle={styles.dropdown1BtnTxtStyle}
+            renderDropdownIcon={(isOpened) => {
+              return (
+                <FontAwesome
+                  name={isOpened ? "chevron-up" : "chevron-down"}
+                  color={"#444"}
+                  size={18}
+                />
+              );
+            }}
+            dropdownIconPosition={"right"}
+            dropdownStyle={styles.dropdown1DropdownStyle}
+            rowStyle={styles.dropdown1RowStyle}
+            rowTextStyle={styles.dropdown1BtnTxtStyle}
+            buttonTextAfterSelection={(selectedItem, index) => {
+              // text represented after item is selected
+              // if data array is an array of objects then return selectedItem.property to render after item is selected
+              return `${selectedItem.name}`;
+            }}
+            rowTextForSelection={(item, index) => {
+              // text represented for each item in dropdown
+              // if data array is an array of objects then return item.property to represent item in dropdown
+              return `${item.name}(${item.id})`;
+            }}
+          />
         </View>
 
         {memberDetail.data ? (
@@ -321,7 +328,7 @@ export default function TaskCreation({ navigation, route }) {
           }
           style={styles.addText}
         >
-          + Assign member
+          Choose member
         </Text>
 
         <TouchableOpacity style={styles.btn} onPress={handleTaskCreation}>
@@ -337,7 +344,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flex: 1,
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    backgroundColor: "#fff",
     padding: "5%",
   },
   box: {
@@ -345,7 +352,7 @@ const styles = StyleSheet.create({
     paddingVertical: "5%",
     width: "100%",
     borderColor: "grey",
-    borderWidth: 1,
+    // borderWidth: 1,
     borderRadius: 10,
     display: "flex",
   },
@@ -357,7 +364,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderColor: "#444",
     alignSelf: "center",
-    marginTop: "3%",
+    marginTop: "1%",
   },
   dropdown1BtnTxtStyle: { color: "#444", textAlign: "left", fontSize: 14 },
   dropdown1DropdownStyle: { backgroundColor: "#EFEFEF" },
@@ -368,9 +375,10 @@ const styles = StyleSheet.create({
 
   memberContainer: {
     backgroundColor: COLORS.primary,
+    borderRadius: 8,
     alignSelf: "center",
     padding: "5%",
-    marginTop: "3%",
+    marginTop: "5%",
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -411,7 +419,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: COLORS.secondary,
     padding: "3%",
-    alignSelf: "flex-end",
+    alignSelf: "center",
   },
   btn: {
     marginTop: "5%",

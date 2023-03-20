@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -5,16 +6,16 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useState } from "react";
+
 import SelectDropdown from "react-native-select-dropdown";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 import { COLORS } from "../../shared/Styles";
 import {
-  USER_ADMIN_KEY,
-  USER_LOGGEDIN_KEY,
-  USER_MEMBER_KEY,
+  ADMIN_KEY,
+  LOGGEDIN_KEY,
+  MEMBER_KEY,
   USER_TYPES,
 } from "../../shared/Constants";
 import { handleValidation } from "../../utils/Validations";
@@ -54,9 +55,9 @@ export default function Signup({ navigation }) {
     }
     let expectedData = [];
     if (userType === USER_TYPES.ADMIN) {
-      expectedData = await AsyncStorage.getItem(USER_ADMIN_KEY);
+      expectedData = await AsyncStorage.getItem(ADMIN_KEY);
     } else {
-      expectedData = await AsyncStorage.getItem(USER_MEMBER_KEY);
+      expectedData = await AsyncStorage.getItem(MEMBER_KEY);
     }
 
     expectedData = JSON.parse(expectedData) || [];
@@ -72,7 +73,7 @@ export default function Signup({ navigation }) {
 
     if (userType === USER_TYPES.ADMIN) {
       await AsyncStorage.setItem(
-        USER_ADMIN_KEY,
+        ADMIN_KEY,
         JSON.stringify([
           {
             email: email.val,
@@ -85,7 +86,7 @@ export default function Signup({ navigation }) {
       );
     } else {
       await AsyncStorage.setItem(
-        USER_MEMBER_KEY,
+        MEMBER_KEY,
         JSON.stringify([
           {
             email: email.val,
@@ -99,7 +100,7 @@ export default function Signup({ navigation }) {
     }
 
     await AsyncStorage.setItem(
-      USER_LOGGEDIN_KEY,
+      LOGGEDIN_KEY,
       JSON.stringify({
         email: email.val,
         password: pass.val,
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingTop: "10%",
-    backgroundColor: COLORS.primary,
+    backgroundColor: "#fff",
     // justifyContent: 'center',
   },
   box: {
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     paddingVertical: "5%",
     width: "90%",
     borderColor: "grey",
-    borderWidth: 1,
+    // borderWidth: 1,
     borderRadius: 10,
     display: "flex",
     alignItems: "center",

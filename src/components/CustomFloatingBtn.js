@@ -1,8 +1,8 @@
+import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
 import Icon from "react-native-vector-icons/AntDesign";
 
-import React from "react";
 import { COLORS } from "../shared/Styles";
 
 export default function CustomFloatingBtn({ onBtnPress }) {
