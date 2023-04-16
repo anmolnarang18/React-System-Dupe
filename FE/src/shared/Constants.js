@@ -6,7 +6,7 @@ export const TASKS_KEY = "taskskey";
 export const EMAIL_VALIDATION = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
 
 export const  SHIFT_STATUS = {
-  NOT_ASSIGNED:"NOT_ASSIGNED",
+  NOT_ASSIGNED:"NOT ASSIGNED",
   CONFIRMED:"CONFIRMED",
   COMPLETED:"COMPLETED",
   CANCELLED:"CANCELLED",

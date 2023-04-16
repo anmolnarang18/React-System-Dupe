@@ -1,4 +1,4 @@
-import { EMAIL_VALIDATION, TASK_STATUS } from "../shared/Constants";
+import { EMAIL_VALIDATION } from "../shared/Constants";
 
 export const handleValidation = (val, type, name = "name") => {
   switch (type) {

@@ -9,13 +9,16 @@ const router = express.Router();
 router.post("/createShift", isAuth, shiftController.createShift);
 
 // PUT shift/confirmShift
-router.put("/confirmShift", isAuth, shiftController.confirmShift);
+router.post("/confirmShift", isAuth, shiftController.confirmShift);
+
+// PUT shift/completeShift
+router.post("/completeShift", isAuth, shiftController.completeShift);
 
 // PUT shift/swapShift
-router.put("/swapShift", isAuth, shiftController.swapShift);
+router.post("/swapShift", isAuth, shiftController.swapShift);
 
 // PUT shift/cancelShift
-router.put("/cancelShift", isAuth, shiftController.cancelShift);
+router.post("/cancelShift", isAuth, shiftController.cancelShift);
 
 // GET shift/getShifts
 router.get("/getshifts", isAuth, shiftController.getshifts);

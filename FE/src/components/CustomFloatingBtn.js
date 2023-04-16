@@ -5,10 +5,10 @@ import Icon from "react-native-vector-icons/AntDesign";
 
 import { COLORS } from "../shared/Styles";
 
-export default function CustomFloatingBtn({ onBtnPress }) {
+export default function CustomFloatingBtn({ onBtnPress, parentStyles, iconName='plus' }) {
   return (
-    <TouchableOpacity onPress={onBtnPress} style={styles.floatingBtn}>
-      <Icon name="plus" style={styles.icon} />
+    <TouchableOpacity onPress={onBtnPress} style={[styles.floatingBtn, parentStyles]}>
+      <Icon name={iconName} style={styles.icon} />
     </TouchableOpacity>
   );
 }

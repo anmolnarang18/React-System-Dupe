@@ -4,8 +4,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SIGNEDIN_KEY } from "../shared/Constants";
 
 const port = "8000";
-// const domain = "http://192.168.1.73";
-const domain = "http://localhost";
+const domain = "http://192.168.1.73";
+// const domain = "http://localhost";
 let baseURL = null;
 
 baseURL = `${domain}:${port}`;

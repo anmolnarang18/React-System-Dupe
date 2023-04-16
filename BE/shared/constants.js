@@ -8,7 +8,7 @@ module.exports = {
     /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/,
 
   SHIFT_STATUS: {
-    NOT_ASSIGNED:"NOT_ASSIGNED",
+    NOT_ASSIGNED:"NOT ASSIGNED",
     CONFIRMED:"CONFIRMED",
     COMPLETED:"COMPLETED",
     CANCELLED:"CANCELLED",

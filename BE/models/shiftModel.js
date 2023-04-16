@@ -21,7 +21,6 @@ const shiftSchema = new Schema(
     confirmedBy: {
       type: Schema.Types.ObjectId,
       ref: "Auth",
-      required: true,
     },
     createdBy: {
       type: Schema.Types.ObjectId,
@@ -31,11 +30,11 @@ const shiftSchema = new Schema(
     swappedFrom: {
       type: Schema.Types.ObjectId,
       ref: "Auth",
-      required: true,
     },
     status: {
       type: String,
       default: SHIFT_STATUS.NOT_ASSIGNED,
+      required: true
     },
   },
   {

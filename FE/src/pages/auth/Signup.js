@@ -1,9 +1,7 @@
 import React, {useState} from 'react';
 import {
-  ActivityIndicator,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   Text,
   View,
 } from 'react-native';
@@ -17,6 +15,7 @@ import apiClient from '../../api/Api';
 import {COLORS} from '../../shared/Styles';
 import {SIGNEDIN_KEY, USER_TYPE} from '../../shared/Constants';
 import {handleValidation} from '../../utils/Validations';
+import CustomButton from '../../components/CustomButton';
 
 export default function Signup({navigation, route}) {
   const [email, setEmail] = useState({
@@ -185,16 +184,11 @@ export default function Signup({navigation, route}) {
 
         <Text style={[styles.errText, {marginBottom: '3%'}]}>{error}</Text>
 
-        <TouchableOpacity style={styles.btn} onPress={handleSignUp}>
-          <Text
-            style={{color: COLORS.secondary, fontSize: 14, fontWeight: '700'}}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color={COLORS.secondary} />
-            ) : (
-              'Sign up'
-            )}
-          </Text>
-        </TouchableOpacity>
+        <CustomButton
+          title='Sing up'
+          isLoading={isLoading}
+          onPress={handleSignUp} 
+        />
         
           <Text
             onPress={() => navigation.replace('app_signin')}
@@ -227,14 +221,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: '10%',
-  },
-  btn: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: '5%',
-    paddingVertical: '3%',
-    borderRadius: 8,
-    width: '80%',
-    alignItems: 'center',
   },
   headerText: {
     fontSize: 24,

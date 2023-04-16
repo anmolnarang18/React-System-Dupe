@@ -1,11 +1,11 @@
-import { TASK_STATUS } from "../shared/Constants";
+import { SHIFT_STATUS } from "../shared/Constants";
 
 export const showTaskStatus = (status) => {
   switch (status) {
-    case TASK_STATUS.NOT_STARTED:
-      return "Start";
+    case SHIFT_STATUS.NOT_ASSIGNED:
+      return "Confirm";
 
-    case TASK_STATUS.IN_PROGRESS:
+    case SHIFT_STATUS.CONFIRMED:
       return "Complete";
 
     default:
@@ -15,13 +15,13 @@ export const showTaskStatus = (status) => {
 
 export const decideTaskClr = (status) => {
   switch (status) {
-    case TASK_STATUS.NOT_STARTED:
+    case SHIFT_STATUS.NOT_ASSIGNED:
       return "orange";
 
-    case TASK_STATUS.IN_PROGRESS:
+    case SHIFT_STATUS.CONFIRMED:
       return "blue";
 
-    case TASK_STATUS.COMPLETED:
+    case SHIFT_STATUS.COMPLETED:
       return "green";
 
     default:
@@ -31,26 +31,31 @@ export const decideTaskClr = (status) => {
 
 export const decideTaskStatusChange = (status) => {
   switch (status) {
-    case TASK_STATUS.NOT_STARTED:
-      return TASK_STATUS.IN_PROGRESS;
+    case SHIFT_STATUS.NOT_ASSIGNED:
+      return SHIFT_STATUS.CONFIRMED;
 
-    case TASK_STATUS.IN_PROGRESS:
-      return TASK_STATUS.COMPLETED;
+    case SHIFT_STATUS.CONFIRMED:
+      return SHIFT_STATUS.COMPLETED;
 
     default:
-      return TASK_STATUS.TERMINATED;
+      return SHIFT_STATUS.CANCELLED;
   }
 };
 
-export const handleSort = (data, isAsc) => {
-  const list = [...data];
-  if (isAsc) {
-    return list.sort((a, b) => {
-      return a.totalHours * a.perHourCost < b.totalHours * b.perHourCost;
-    });
-  } else {
-    return list.sort((a, b) => {
-      return a.totalHours * a.perHourCost > b.totalHours * b.perHourCost;
-    });
+export const decidingShiftType = time => {
+  
+  if(time < '12:00:00' && time>'6:00:00'){
+    return 'Morning Shift'
+  }else if(time>='12:00:00' && time<'17:00:00'){
+    return 'Afternoon Shift'
+  }else if(time>='17:00:00' && time<'20:00:00'){
+    return 'Evening Shift'
+  }else{
+    return 'Night Shift'
   }
-};
+}
+
+
+
+
+

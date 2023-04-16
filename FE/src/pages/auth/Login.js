@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -18,6 +16,7 @@ import apiClient from "../../api/Api";
 import { SIGNEDIN_KEY, USER_TYPE } from "../../shared/Constants";
 import { COLORS } from "../../shared/Styles";
 import { handleValidation } from "../../utils/Validations";
+import CustomButton from "../../components/CustomButton";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState({
@@ -88,15 +87,6 @@ export default function Login({ navigation }) {
       setIsLoading(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.inputText}>Loading...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -179,13 +169,11 @@ export default function Login({ navigation }) {
 
         <Text style={[styles.errText, { marginBottom: "3%" }]}>{error}</Text>
 
-        <TouchableOpacity style={styles.btn} onPress={handleSignIn}>
-          <Text
-            style={{ color: COLORS.secondary, fontSize: 14, fontWeight: "700" }}
-          >
-            Login
-          </Text>
-        </TouchableOpacity>
+        <CustomButton
+          title="Login"
+          isLoading={isLoading}
+          onPress={handleSignIn}
+        />
 
         <Text
           onPress={() =>
@@ -222,14 +210,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: "10%",
-  },
-  btn: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: "5%",
-    paddingVertical: "3%",
-    borderRadius: 8,
-    width: "80%",
-    alignItems: "center",
   },
   headerText: {
     fontSize: 24,
