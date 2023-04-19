@@ -41,7 +41,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(8000,'192.168.1.73',() => {
+    app.listen(8000,() => {
 
       console.log("SERVER STARTED AT PORT 8000");
     });
