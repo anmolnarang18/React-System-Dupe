@@ -24,25 +24,30 @@ import {COLORS} from '../../shared/Styles';
 import ShiftItem from '../../components/ShiftItem';
 
 const ShiftListUI = ({
-  tasks,
+  shifts,
   userInfo,
   onReload,
   onConfirm,
   onCancel,
   onComplete,
   onSwap,
+  onSwapResponse,
+  onCardPress,
 }) => (
   <FlatList
-    data={tasks}
+    data={shifts}
     keyExtractor={item => item._id}
-    contentContainerStyle={[styles.container, {padding: '3%'}]}
+    showsVerticalScrollIndicator={false}
+    style={{height: '100%', width: '100%', padding: '3%', marginBottom: '1%'}}
     onRefresh={onReload}
     refreshing={false}
     ListEmptyComponent={() => (
       <View
         style={{
+          display: 'flex',
+          flex: 1,
           width: '100%',
-          height: '90%',
+          height: '100%',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
@@ -59,6 +64,8 @@ const ShiftListUI = ({
         onCancel={onCancel}
         onComplete={onComplete}
         onSwap={onSwap}
+        onSwapResponse={onSwapResponse}
+        onCardPress={onCardPress}
       />
     )}
   />
@@ -116,14 +123,13 @@ export default function Home({navigation}) {
   };
 
   const handleLogout = () => {
-
     Alert.alert(
       'Logout',
       'Are you sure, you want to exit this application?',
       [
         {
           text: 'Yes',
-          onPress: async() => {
+          onPress: async () => {
             await AsyncStorage.removeItem(SIGNEDIN_KEY);
             navigation.reset({
               index: 0,
@@ -146,8 +152,6 @@ export default function Home({navigation}) {
         //   ),
       },
     );
-
-   
   };
 
   const getShifts = async status => {
@@ -185,34 +189,34 @@ export default function Home({navigation}) {
     });
   };
 
-  const taskPress = data => {
-    navigation.navigate('task_detail', {
-      taskInfo: data,
+  const shiftPress = data => {
+    navigation.navigate('shift_detail', {
+      shiftInfo: data,
       userInfo,
-      handleShiftFetching,
+      fetchDataWithIndex,
     });
   };
 
   const handleShiftFetching = async (oldStatus, newStatus, isCompleted) => {
     if (oldStatus) {
-      const oldStatusTasks = await getShifts(oldStatus);
-      console.log('COMING OLD', oldStatusTasks);
+      const oldStatusShifts = await getShifts(oldStatus);
+    
       switch (oldStatus) {
         case SHIFT_STATUS.NOT_ASSIGNED:
           setNotAssignedShifts({
-            data: oldStatusTasks,
+            data: oldStatusShifts,
             isCalled: true,
           });
           break;
         case SHIFT_STATUS.CONFIRMED:
           setConfirmedShifts({
-            data: oldStatusTasks,
+            data: oldStatusShifts,
             isCalled: true,
           });
 
         case SHIFT_STATUS.SWAP:
           setExchangedShifts({
-            data: oldStatusTasks,
+            data: oldStatusShifts,
             isCalled: true,
           });
 
@@ -222,24 +226,24 @@ export default function Home({navigation}) {
     }
 
     if (newStatus) {
-      const newStatusTasks = await getShifts(newStatus);
+      const newStatusShifts = await getShifts(newStatus);
 
       switch (newStatus) {
         case SHIFT_STATUS.NOT_ASSIGNED:
           setNotAssignedShifts({
-            data: newStatusTasks,
+            data: newStatusShifts,
             isCalled: true,
           });
           break;
         case SHIFT_STATUS.CONFIRMED:
           setConfirmedShifts({
-            data: newStatusTasks,
+            data: newStatusShifts,
             isCalled: true,
           });
 
         case SHIFT_STATUS.SWAP:
           setExchangedShifts({
-            data: newStatusTasks,
+            data: newStatusShifts,
             isCalled: true,
           });
 
@@ -249,48 +253,37 @@ export default function Home({navigation}) {
     }
 
     if (isCompleted) {
-      const newStatusTasks = await getShifts(newStatus);
+      const newStatusShifts = await getShifts(newStatus);
       setNotAssignedShifts({
-        data: newStatusTasks,
+        data: newStatusShifts,
         isCalled: true,
       });
     }
   };
 
-  const handleMemberCreation = () => {
-    navigation.navigate('auth', {
-      screen: 'app_signup',
-      params: {
-        isMember: true,
-        userInfo: userInfo,
-      },
-    });
-  };
-
   const handleReload = async () => {
-    let task = [];
+    let shift = [];
 
     switch (index) {
       case 0:
-        task = await getShifts(SHIFT_STATUS.NOT_ASSIGNED);
+        shift = await getShifts(SHIFT_STATUS.NOT_ASSIGNED);
         setNotAssignedShifts({
           isCalled: true,
-          data: task,
+          data: shift,
         });
         break;
       case 1:
-        task = await getShifts(SHIFT_STATUS.CONFIRMED);
+        shift = await getShifts(SHIFT_STATUS.CONFIRMED);
         setConfirmedShifts({
           isCalled: true,
-          data: task,
+          data: shift,
         });
         break;
       case 2:
-        task = await getShifts(SHIFT_STATUS.SWAP);
-        console.log('COMING HERE', task);
+        shift = await getShifts(SHIFT_STATUS.SWAP);
         setExchangedShifts({
           isCalled: true,
-          data: task,
+          data: shift,
         });
         break;
 
@@ -299,11 +292,21 @@ export default function Home({navigation}) {
     }
   };
 
-  const handleShiftSwap = () => {
-    Alert.alert('Coming Soon!');
-  }
+  const handleShiftSwap = async id => {
+    filterConfirmedShifts(id);
 
-  const alertShiftCancellation = (id) => {
+    Alert.alert('Success!', `Shift sent to swap.`, [], {cancelable: true});
+    if (exchangedShifts.isCalled) {
+      const shift = await getShifts(SHIFT_STATUS.SWAP);
+
+      setExchangedShifts({
+        isCalled: true,
+        data: shift,
+      });
+    }
+  };
+
+  const alertShiftCancellation = id => {
     Alert.alert(
       'Cancel',
       'Are you sure, you want to cancel this shift?',
@@ -323,11 +326,32 @@ export default function Home({navigation}) {
         cancelable: true,
       },
     );
-  }
+  };
+
+  const alertSwapRejection = (id, isAccepted) => {
+    Alert.alert(
+      'Reject',
+      'Are you sure, you want to reject this shift?',
+      [
+        {
+          text: 'Yes',
+          onPress: () => handleSwapResponse(id, isAccepted),
+          style: 'positive',
+        },
+        {
+          text: 'Cancel',
+          onPress: () => {},
+          style: 'cancel',
+        },
+      ],
+      {
+        cancelable: true,
+      },
+    );
+  };
 
   const handleShiftConfirmation = async id => {
-
-    setIsLoading(true);
+    // setIsLoading(true);
     try {
       const result = await apiClient.post('/shift/confirmShift', {
         shiftId: id,
@@ -338,21 +362,18 @@ export default function Home({navigation}) {
 
         const requiredShifts = shifts.data.filter(e => e._id !== id);
 
-        const task = await getShifts(SHIFT_STATUS.CONFIRMED);
+        const shift = await getShifts(SHIFT_STATUS.CONFIRMED);
 
         setConfirmedShifts({
           isCalled: true,
-          data: task,
+          data: shift,
         });
         setNotAssignedShifts({
           data: requiredShifts,
           isCalled: true,
         });
         setIsLoading(false);
-        Alert.alert(
-          'Success!',
-          `Shift Confirmed!`,[],{cancelable: true}
-        );
+        Alert.alert('Success!', `Shift Confirmed!`, [], {cancelable: true});
       }
     } catch (error) {
       console.log('CONFIRMATION ERROR', error);
@@ -371,25 +392,20 @@ export default function Home({navigation}) {
 
     if (isCancelled) endPoint = 'cancelShift';
 
-    setIsLoading(true);
+    // setIsLoading(true);
     try {
       const result = await apiClient.post(`/shift/${endPoint}`, {
         shiftId: id,
       });
 
       if (result.data) {
-        const shifts = {...confirmedShifts};
-
-        const requiredShifts = shifts.data.filter(e => e._id !== id);
-
-        setConfirmedShifts({
-          isCalled: true,
-          data: requiredShifts,
-        });
+        filterConfirmedShifts(id);
         setIsLoading(false);
         Alert.alert(
           'Success!',
-          `Shift ${isCancelled?'Cancelled!':'Completed!'}`,[],{cancelable: true}
+          `Shift ${isCancelled ? 'Cancelled!' : 'Completed!'}`,
+          [],
+          {cancelable: true},
         );
       }
     } catch (error) {
@@ -404,37 +420,94 @@ export default function Home({navigation}) {
     }
   };
 
-  const handleIndexChange = async index => {
+  const handleSwapResponse = (shiftId, isAccepted) => {
+    apiClient
+      .post('/shift/swapResponse', {
+        shiftId,
+        isAccepted,
+      })
+      .then(async resp => {
+        console.log('SWAP RESPONSE', resp);
+        if (isAccepted) {
+          Alert.alert('Success!', `Shift Confirmed!!`, [], {cancelable: true});
+          const shifts = await getShifts(SHIFT_STATUS.CONFIRMED);
+          setConfirmedShifts({
+            isCalled: true,
+            data: shifts,
+          });
+        } else {
+          Alert.alert('Success!', `Response sent!`, [], {cancelable: true});
+        }
+
+        const swapShifts = [...exchangedShifts.data];
+
+        const filteredShifts = swapShifts.filter(e => e._id !== shiftId);
+
+        setExchangedShifts({
+          isCalled: true,
+          data: filteredShifts,
+        });
+      })
+      .catch(error => {
+        console.log('SWAPPING ERROR', error);
+
+        Alert.alert(
+          'Error',
+          error?.response?.data?.message ||
+            error?.data?.message ||
+            'Something went wrong!',
+        );
+      });
+  };
+
+  const filterConfirmedShifts = id => {
+    const shifts = {...confirmedShifts};
+
+    const requiredShifts = shifts.data.filter(e => e._id !== id);
+
+    setConfirmedShifts({
+      isCalled: true,
+      data: requiredShifts,
+    });
+  };
+
+  const handleIndexChange =  index => {
     setIndex(index);
-    switch (index) {
+    fetchDataWithIndex(false,index);
+  };
+
+  const fetchDataWithIndex = async (isMandate, i) => {
+    const reqIndex = i || index;
+  
+    switch (reqIndex) {
       case 0:
-        if (!notAssignedShifts.isCalled) {
-          const task = await getShifts(SHIFT_STATUS.NOT_ASSIGNED);
+        if (isMandate || !notAssignedShifts.isCalled) {
+          const shift = await getShifts(SHIFT_STATUS.NOT_ASSIGNED);
 
           setNotAssignedShifts({
             isCalled: true,
-            data: task,
+            data: shift,
           });
         }
         break;
       case 1:
-        if (!confirmedShifts.isCalled) {
-          const task = await getShifts(SHIFT_STATUS.CONFIRMED);
+        if (isMandate || !confirmedShifts.isCalled) {
+          const shift = await getShifts(SHIFT_STATUS.CONFIRMED);
 
           setConfirmedShifts({
             isCalled: true,
-            data: task,
+            data: shift,
           });
         }
 
         break;
       case 2:
-        if (!exchangedShifts.isCalled) {
-          const task = await getShifts(SHIFT_STATUS.SWAP);
+        if (isMandate || !exchangedShifts.isCalled) {
+          const shift = await getShifts(SHIFT_STATUS.SWAP);
 
           setExchangedShifts({
             isCalled: true,
-            data: task,
+            data: shift,
           });
         }
 
@@ -443,37 +516,55 @@ export default function Home({navigation}) {
       default:
         return;
     }
-  };
+  }
 
   if (isLoading) {
     return (
-      <View style={[styles.container,{alignItems:'center', justifyContent:'center'}]} >
-        <ActivityIndicator color={COLORS.primary} size='large' />
+      <View
+        style={[
+          styles.container,
+          {alignItems: 'center', justifyContent: 'center'},
+        ]}>
+        <ActivityIndicator color={COLORS.primary} size="large" />
         <Text>Fetching shifts...</Text>
       </View>
-    )
-}
+    );
+  }
 
   const renderScene = SceneMap({
     [SHIFT_STATUS.NOT_ASSIGNED]: () => (
       <ShiftListUI
-        tasks={notAssignedShifts.data}
+        shifts={notAssignedShifts.data}
         userInfo={userInfo}
         onConfirm={handleShiftConfirmation}
         onReload={handleReload}
+        onCardPress={shiftPress}
       />
     ),
     [SHIFT_STATUS.CONFIRMED]: () => (
       <ShiftListUI
-        tasks={confirmedShifts.data}
+        shifts={confirmedShifts.data}
         userInfo={userInfo}
         onComplete={handleShiftCompletion}
         onCancel={alertShiftCancellation}
         onSwap={handleShiftSwap}
         onReload={handleReload}
+        onCardPress={shiftPress}
       />
     ),
-    [SHIFT_STATUS.SWAP]: () => <Text>shifts to exchange</Text>,
+    [SHIFT_STATUS.SWAP]: () => (
+      <ShiftListUI
+        shifts={exchangedShifts.data}
+        userInfo={userInfo}
+        onSwapResponse={(id, isAccepted) => {
+          isAccepted
+            ? handleSwapResponse(id, isAccepted)
+            : alertSwapRejection(id, isAccepted);
+        }}
+        onReload={handleReload}
+        onCardPress={shiftPress}
+      />
+    ),
   });
 
   return (
@@ -516,6 +607,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     width: '100%',
+    height: '100%',
   },
   itemContainer: {
     backgroundColor: '#fff',

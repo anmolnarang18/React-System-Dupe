@@ -106,7 +106,14 @@ exports.createUser = async (req, res, next) => {
 exports.fetchWorkers = async (req, res, next) => {
   try {
     const users = await User.find({
-      type: { $eq: USER_TYPE.WORKER },
+      $and:[
+        {
+          type: { $eq: USER_TYPE.WORKER },
+        },
+        {
+          _id: {$ne: req.user._id}
+        }
+      ]
     });
     res.status(200).json({
       message: "Workers fetched successfully!",

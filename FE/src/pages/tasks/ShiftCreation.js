@@ -46,7 +46,6 @@ export default function ShiftCreation({ navigation, route }) {
       description: desc.val,
       startDate,
       endDate,
-      createdBy: route.params.userInfo,
     };
 
     try {
@@ -104,9 +103,10 @@ export default function ShiftCreation({ navigation, route }) {
               open={openCDate}
               date={startDate}
               onConfirm={(date) => {
-                setOpenCDate((prev) => !prev);
+             
                 setStartDate(date);
-                setEndDate(date.addHours(8))
+                setEndDate(new Date(moment(date).add({hours: 8})))
+                setOpenCDate((prev) => !prev);
                 // if (moment(endDate).diff(date) < 0) {
                 //   setEndDate(date);
                 // }

@@ -1,19 +1,6 @@
 import { SHIFT_STATUS } from "../shared/Constants";
 
-export const showTaskStatus = (status) => {
-  switch (status) {
-    case SHIFT_STATUS.NOT_ASSIGNED:
-      return "Confirm";
-
-    case SHIFT_STATUS.CONFIRMED:
-      return "Complete";
-
-    default:
-      return "Stopped";
-  }
-};
-
-export const decideTaskClr = (status) => {
+export const decideShiftClr = (status) => {
   switch (status) {
     case SHIFT_STATUS.NOT_ASSIGNED:
       return "orange";
@@ -29,18 +16,6 @@ export const decideTaskClr = (status) => {
   }
 };
 
-export const decideTaskStatusChange = (status) => {
-  switch (status) {
-    case SHIFT_STATUS.NOT_ASSIGNED:
-      return SHIFT_STATUS.CONFIRMED;
-
-    case SHIFT_STATUS.CONFIRMED:
-      return SHIFT_STATUS.COMPLETED;
-
-    default:
-      return SHIFT_STATUS.CANCELLED;
-  }
-};
 
 export const decidingShiftType = time => {
   

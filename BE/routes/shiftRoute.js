@@ -20,6 +20,12 @@ router.post("/swapShift", isAuth, shiftController.swapShift);
 // PUT shift/cancelShift
 router.post("/cancelShift", isAuth, shiftController.cancelShift);
 
+// PUT shift/swapResponse
+router.post("/swapResponse", isAuth, shiftController.swapResponse);
+
+// PUT shift/updateShift
+router.put("/updateShift", isAuth, shiftController.updateShift);
+
 // GET shift/getShifts
 router.get("/getshifts", isAuth, shiftController.getshifts);
 

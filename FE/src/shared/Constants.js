@@ -1,7 +1,4 @@
-export const ADMIN_KEY = "useradminprivatekey";
-export const MEMBER_KEY = "usermemberprivatekey";
 export const SIGNEDIN_KEY = "userloggedkey";
-export const TASKS_KEY = "taskskey";
 
 export const EMAIL_VALIDATION = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
 

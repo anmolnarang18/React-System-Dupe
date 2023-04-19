@@ -31,6 +31,10 @@ const shiftSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Auth",
     },
+    swappedTo: {
+      type: Schema.Types.ObjectId,
+      ref: "Auth",
+    },
     status: {
       type: String,
       default: SHIFT_STATUS.NOT_ASSIGNED,
